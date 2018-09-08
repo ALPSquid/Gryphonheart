@@ -17,19 +17,24 @@ local RegisterEvent;
 function GHI_Event(event, func, priority)
 	if class then
 		if event and func then
-			RegisterEvent(event, func, priority);
+			GHI_RegisterEvent(event, func, priority);
 		end
 		return class;
 	end
 	class = GHClass("GHI_Event","frame");
 
-	RegisterEvent = function(e, f, priority)
+	GHI_RegisterEvent = function(e, f, priority)
 		assert(type(e)=="string","Event must be a string");
 		assert(type(f)=="function","Func must be a function")
 		if e and f then
 			if not (registered[e]) then
 				registered[e] = {};
-				class:RegisterEvent(e);
+				-- Check it's not a GHI event before calling Blizzard's register event.
+				if not string.find(e, "GHI") and not string.find(e, "GHP") then
+				    class:RegisterEvent(e);
+                else
+                    --print("[AP Debug][GHI_Event, ln 36]: Skipping register of GHI event: " .. e);
+                end
 			end
 			table.insert(registered[e], {priority = priority, func = f});
 		end
@@ -114,7 +119,7 @@ function GHI_Event(event, func, priority)
 
 	registered = {};
 	if event and func then
-		RegisterEvent(event, func, priority);
+		GHI_RegisterEvent(event, func, priority);
 	end
 
 	return class;

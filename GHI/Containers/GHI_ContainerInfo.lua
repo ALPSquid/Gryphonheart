@@ -11,7 +11,7 @@
 
 function GHI_ContainerInfo(info)
 
-	local miscAPI = GHI_ActionAPI().GetAPI()
+	local miscAPI = GHI_ActionAPI().GetAPI();
 	local class = GHClass("GHI_ContainerInfo");
 
 	local guid, name, isPublic, isItemArea, location, size, icon, stacks, texture, ownerItemGuid, locked;
