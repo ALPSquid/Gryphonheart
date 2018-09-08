@@ -448,11 +448,20 @@ function GHI_ScriptEnviroment(ownerGuid)
 		GetZonePVPInfo = GetZonePVPInfo,
 		GetZoneText = GetZoneText,
 
-		-- map		
-		GetCurrentMapContinent = GetCurrentMapContinent,
+		-- map
+		-- TODO: Consolidate new map functions with GHI_Position and complete replacement methods.
+		GetCurrentMapContinent = function()
+		    mapInfo = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player"));
+		    while mapInfo.mapType ~= 2 do
+		        mapInfo = C_Map.GetMapInfo(mapInfo.parentMapID);
+		    end
+            return mapInfo.mapID;
+		end,
 		GetCurrentMapDungeonLevel = GetCurrentMapDungeonLevel,
 		GetNumDungeonMapLevels = GetNumDungeonMapLevels,
-		GetCurrentMapAreaID = GetCurrentMapAreaID,
+		GetCurrentMapAreaID = function()
+		    return C_Map.GetBestMapForUnit("player");
+		end,
 		GetCurrentMapZone = GetCurrentMapZone,
 		GetMapContinents = GetMapContinents,
 		GetMapInfo = GetMapInfo,
@@ -466,7 +475,9 @@ function GHI_ScriptEnviroment(ownerGuid)
 		RequestBattlefieldPositions = RequestBattlefieldPositions,
 		SetDungeonMapLevel = SetDungeonMapLevel,
 		SetMapByID = SetMapByID,
-		SetMapToCurrentZone = SetMapToCurrentZone,
+		SetMapToCurrentZone = function()
+            WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
+	    end,
 		SetMapZoom = SetMapZoom,
 		SetupFullscreenScale = SetupFullscreenScale,
 		UpdateMapHighlight = UpdateMapHighlight,

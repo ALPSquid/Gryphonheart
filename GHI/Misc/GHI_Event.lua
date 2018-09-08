@@ -32,8 +32,6 @@ function GHI_Event(event, func, priority)
 				-- Check it's not a GHI event before calling Blizzard's register event.
 				if not string.find(e, "GHI") and not string.find(e, "GHP") then
 				    class:RegisterEvent(e);
-                else
-                    --print("[AP Debug][GHI_Event, ln 36]: Skipping register of GHI event: " .. e);
                 end
 			end
 			table.insert(registered[e], {priority = priority, func = f});

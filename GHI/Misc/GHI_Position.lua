@@ -55,9 +55,13 @@ function GHI_Position(useVersion1Coor)
 		f:GetScript("OnClick")(f)
 	end
 
+	local SetMapToCurrentZone = function()
+        WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
+	end
+
 	local ResetMap = function()
 		SetMapToCurrentZone();
-		if GetCurrentMapAreaID() == areaID then
+		if C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player")) == areaID then
 			SetDungeonMapLevel(dungeonLevel);
 		elseif areaID == -1 then
 			if continent == -1 then -- cosmos
@@ -66,7 +70,7 @@ function GHI_Position(useVersion1Coor)
 				SetMapZoom(0);
 			end
 		else
-			SetMapByID(areaID)
+			WorldMapFrame:SetMapID(areaID)
 		end
 		if DD then
 			for i,v in pairs(DD) do
@@ -82,13 +86,26 @@ function GHI_Position(useVersion1Coor)
 	end
 
 	--Class functions
+	class.GetCurrentMapContinent = function()
+        mapInfo = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player"));
+        while mapInfo.mapType ~= 2 do
+            mapInfo = C_Map.GetMapInfo(mapInfo.parentMapID);
+        end
+        return mapInfo.mapID;
+    end
+
+    class.GetCurrentMapID = function()
+        return C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player"));
+    end
+
+
 	class.GetCoor = function(unit,decimals)
 		if not (unit) then unit = "player" end
 
-		zoneIndex = GetCurrentMapZone()
-		continent = GetCurrentMapContinent()
-		areaID = GetCurrentMapAreaID()
-		dungeonLevel = GetCurrentMapDungeonLevel();
+		zoneIndex = C_Map.GetBestMapForUnit("player"); -- TODO: Correct conversion? Probably need functions that walk up and down to find the right mapType (Enum.UIMapType)
+		continent = class.GetCurrentMapContinent();
+		areaID = class.GetCurrentMapID();
+		--dungeonLevel = GetCurrentMapDungeonLevel();
 
 		-- check if drop down is shown
 		DD = {
@@ -99,8 +116,8 @@ function GHI_Position(useVersion1Coor)
 		}
 
 		-- Move map
-		SetMapToCurrentZone()
-		currentContinent = GetCurrentMapContinent()
+		SetMapToCurrentZone();
+		currentContinent = continent;
 		if currentContinent < 0 or currentContinent > 7 or currentContinent == 5 then --7 is draenor,6 is pandaria, 5 is maelstrom
 			ResetMap()
 			return 0.0, 0.0, 0
