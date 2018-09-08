@@ -326,14 +326,14 @@ function GHI_VersionInfo()
 
 	local SpotChannelMembers = function(i)
 
-		local n1 = GetChannelRosterInfo("" .. i, 1);
+		local n1 = C_ChatInfo.GetChannelRosterInfo("" .. i, 1);
 		if (n1) then
 			local j = 1;
-			local name = GetChannelRosterInfo("" .. i, j);
+			local name = C_ChatInfo.GetChannelRosterInfo("" .. i, j);
 			while (name) do
 				class.NoticePlayer(name);
 				j = j + 1;
-				name = GetChannelRosterInfo("" .. i, j);
+				name = C_ChatInfo.GetChannelRosterInfo("" .. i, j);
 			end
 		end
 	end
