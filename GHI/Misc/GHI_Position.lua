@@ -24,11 +24,13 @@ function GHI_Position(useVersion1Coor)
 	local dungeonLevel;
 	local dungeonLevelDropDownShown;
 
+
 	GHI_Event("GHP_LOADED",function()
 		if GHP_FloorLevelDetermination then
 			floorLevel = GHP_FloorLevelDetermination();
 		end
 	end);
+
 
 	local Round = function(num,decimals)
 		if decimals then
@@ -86,18 +88,42 @@ function GHI_Position(useVersion1Coor)
 	end
 
 	--Class functions
+
+	-- Map API
+	class.GetCurrentMapID = function()
+		return C_Map.GetBestMapForUnit("player")
+	end
+
+	class.GetCurrentMapInfo = function()
+		return C_Map.GetMapInfo(class.GetCurrentMapID());
+	end
+
+ 	class.GetMapSubLevels = function()
+		return C_Map.GetMapGroupMembersInfo(C_Map.GetMapGroupID(class.GetCurrentMapID()));
+	end
+
+	class.GetCurrentMapDungeonLevel = function()
+		local currentMapID = class.GetCurrentMapID();
+		local mapGroup = class.GetMapSubLevels();
+		-- Find map level that matches the current map.
+		for i, map in pairs(mapGroup) do
+			if map.mapID == currentMapID then
+				return map.relativeHeightIndex;
+			end
+		end
+
+		return 0;
+	end
+
 	class.GetCurrentMapContinent = function()
-        mapInfo = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player"));
-        while mapInfo.mapType ~= 2 do
-            mapInfo = C_Map.GetMapInfo(mapInfo.parentMapID);
-        end
-        return mapInfo.mapID;
-    end
-
-    class.GetCurrentMapID = function()
-        return C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player"));
-    end
-
+		local mapInfo = class.GetCurrentMapInfo();
+		-- Walk up until we find a continent.
+		while mapInfo.mapType ~= Enum.UIMapType.Continent do
+			mapInfo = C_Map.GetMapInfo(mapInfo.parentMapID);
+		end
+		return mapInfo.mapID;
+	end
+	--
 
 	class.GetCoor = function(unit,decimals)
 		if not (unit) then unit = "player" end

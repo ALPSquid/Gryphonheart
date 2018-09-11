@@ -450,14 +450,8 @@ function GHI_ScriptEnviroment(ownerGuid)
 
 		-- map
 		-- TODO: Consolidate new map functions with GHI_Position and complete replacement methods.
-		GetCurrentMapContinent = function()
-		    mapInfo = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player"));
-		    while mapInfo.mapType ~= 2 do
-		        mapInfo = C_Map.GetMapInfo(mapInfo.parentMapID);
-		    end
-            return mapInfo.mapID;
-		end,
-		GetCurrentMapDungeonLevel = GetCurrentMapDungeonLevel,
+		GetCurrentMapContinent = GHI_Position().GetCurrentMapContinent,
+		GetCurrentMapDungeonLevel = GHI_Position().GetCurrentMapDungeonLevel,
 		GetNumDungeonMapLevels = GetNumDungeonMapLevels,
 		GetCurrentMapAreaID = function()
 		    return C_Map.GetBestMapForUnit("player");
