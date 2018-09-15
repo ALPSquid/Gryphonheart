@@ -102,6 +102,12 @@ function GHI_Position(useVersion1Coor)
 		return C_Map.GetMapGroupMembersInfo(C_Map.GetMapGroupID(class.GetCurrentMapID()));
 	end
 
+	class.GetNumMapSubLevels = function()
+		local mapGroup = class.GetMapSubLevels();
+		return table.getn(mapGroup);
+	end
+
+	--- Returns the index of the current map sub-level the player is in.
 	class.GetCurrentMapDungeonLevel = function()
 		local currentMapID = class.GetCurrentMapID();
 		local mapGroup = class.GetMapSubLevels();
@@ -115,13 +121,87 @@ function GHI_Position(useVersion1Coor)
 		return 0;
 	end
 
-	class.GetCurrentMapContinent = function()
+	--- Returns the ID of the current map continent.
+	class.GetCurrentMapContinentID = function()
 		local mapInfo = class.GetCurrentMapInfo();
 		-- Walk up until we find a continent.
 		while mapInfo.mapType ~= Enum.UIMapType.Continent do
 			mapInfo = C_Map.GetMapInfo(mapInfo.parentMapID);
 		end
 		return mapInfo.mapID;
+	end
+
+	--- Returns the index of the current map within the continent, or 0 if this is a continent.
+	class.GetCurrentMapIndex = function()
+		local currentMapID = class.GetCurrentMapID();
+		local continentID = class.GetCurrentMapContinentID();
+
+		if currentMapID == continentID then
+			return 0;
+		end
+
+		for i, map in pairs(C_Map.GetMapChildrenInfo(continentID)) do
+			if map.mapID == currentMapID then
+				return i;
+			end
+		end
+	end
+
+	--- Returns a list of continent info
+	class.GetContinents = function()
+		-- Get cosmos map
+		local cosmosMap = class.GetCurrentMapInfo();
+		while cosmosMap.mapType ~= Enum.UIMapType.Cosmic do
+			cosmosMap = C_Map.GetMapInfo(cosmosMap.parentMapID);
+		end
+
+		return class.GetContinentsForMap(cosmosMap.mapID);
+	end
+
+	--- Returns a list of continent names (replacement for GetMapContinents)
+	class.GetContinentNames = function()
+		local continents = class.GetContinents();
+		local continentNames = {};
+		for i, continent in pairs(continents) do
+			table.insert(continentNames, continent.name);
+		end
+
+		return continentNames;
+	end
+
+	-- Returns a list of all continents in a map.
+	class.GetContinentsForMap = function(mapID)
+		-- If map is a continent or is smaller than a continent, just return now.
+		if C_Map.GetMapInfo(mapID).mapType >= Enum.UIMapType.Continent then
+			return {};
+		end;
+
+		local continents = {};
+		for i, childMap in pairs(C_Map.GetMapChildrenInfo(mapID)) do
+			-- If it's a continent, add it to the list.
+			if childMap.mapType == Enum.UIMapType.Continent then
+				table.insert(continents, childMap);
+			-- If it's larger than a continent, get it's own continents.
+			elseif childMap.mapType < Enum.UIMapType.Continent then
+				local childMapContinents = class.GetContinentsForMap(childMap.mapID);
+				tableAppend(continents, childMapContinents);
+			end
+		end
+
+		return continents;
+	end
+
+	-- TODO: Move to a utils file.
+	--- Append a value to an array. If value is a table, each sub-value will be inserted.
+	tableAppend = function(targetTable, value)
+		-- If value is a table, unpack it and insert the values.
+		if type(value) == "table" then
+			for i, subValue in pairs(value) do
+				table.insert(targetTable, subValue)
+			end
+		else
+			table.insert(targetTable, value)
+		end
 	end
 	--
 

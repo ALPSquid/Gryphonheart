@@ -449,16 +449,13 @@ function GHI_ScriptEnviroment(ownerGuid)
 		GetZoneText = GetZoneText,
 
 		-- map
-		-- TODO: Consolidate new map functions with GHI_Position and complete replacement methods.
-		GetCurrentMapContinent = GHI_Position().GetCurrentMapContinent,
+		GetCurrentMapContinent = GHI_Position().GetCurrentMapContinentID,
 		GetCurrentMapDungeonLevel = GHI_Position().GetCurrentMapDungeonLevel,
-		GetNumDungeonMapLevels = GetNumDungeonMapLevels,
-		GetCurrentMapAreaID = function()
-		    return C_Map.GetBestMapForUnit("player");
-		end,
-		GetCurrentMapZone = GetCurrentMapZone,
-		GetMapContinents = GetMapContinents,
-		GetMapInfo = GetMapInfo,
+		GetNumDungeonMapLevels = GHI_Position().GetNumMapSubLevels,
+		GetCurrentMapAreaID = GHI_Position().GetCurrentMapID,
+		GetCurrentMapZone = GHI_Position().GetCurrentMapIndex,
+		GetMapContinents = GHI_Position().GetContinentNames,
+		GetMapInfo = GHI_Position().GetCurrentMapInfo,
 		GetMapLandmarkInfo = GetMapLandmarkInfo,
 		GetMapOverlayInfo = GetMapOverlayInfo,
 		GetMapZones = GetMapZones,
