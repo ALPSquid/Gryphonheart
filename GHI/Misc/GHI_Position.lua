@@ -90,6 +90,26 @@ function GHI_Position(useVersion1Coor)
 	--Class functions
 
 	-- Map API
+
+	class.GetPlayerMapPosition = function()
+		return C_Map.GetPlayerMapPosition(class.GetCurrentMapID(), "player");
+	end
+
+	--- Returns player positions for members in the party/raid.
+	class.GetPartyPlayerPositions = function()
+		local unitType = "party";
+		if IsInRaid("player") then
+			unitType = "raid";
+		end
+
+		local playerPositions = {};
+		for i=1, GetNumGroupMembers() do
+			table.insert(playerPositions, C_Map.GetPlayerMapPosition(class.GetCurrentMapID(), unitType .. i))
+		end
+
+		return playerPositions;
+	end
+
 	class.GetCurrentMapID = function()
 		return C_Map.GetBestMapForUnit("player")
 	end
@@ -98,8 +118,18 @@ function GHI_Position(useVersion1Coor)
 		return C_Map.GetMapInfo(class.GetCurrentMapID());
 	end
 
+	class.SetMapSubLevel = function(levelIdx)
+		local subMap = class.GetMapSubLevels()[levelIdx];
+		WorldMapFrame:SetMapID(subMap.mapID);
+	end
+
  	class.GetMapSubLevels = function()
-		return C_Map.GetMapGroupMembersInfo(C_Map.GetMapGroupID(class.GetCurrentMapID()));
+		local mapGroup = C_Map.GetMapGroupID(class.GetCurrentMapID());
+		if mapGroup == None then
+			return {};
+		end
+
+		return C_Map.GetMapGroupMembersInfo(mapGroup);
 	end
 
 	class.GetNumMapSubLevels = function()
@@ -169,7 +199,7 @@ function GHI_Position(useVersion1Coor)
 		return continentNames;
 	end
 
-	-- Returns a list of all continents in a map.
+	--- Returns a list of all continents in a map.
 	class.GetContinentsForMap = function(mapID)
 		-- If map is a continent or is smaller than a continent, just return now.
 		if C_Map.GetMapInfo(mapID).mapType >= Enum.UIMapType.Continent then
@@ -189,6 +219,65 @@ function GHI_Position(useVersion1Coor)
 		end
 
 		return continents;
+	end
+
+	--- Returns array of map info for zones in the specified continent.
+	class.GetZonesForContinentByIdx = function(continentIdx)
+		return C_Map.GetMapChildrenInfo(class.GetContinents()[continentIdx].mapID);
+	end
+
+	--- Replacement for SetMapZoom.
+	class.SetMapZoom = function(continentIdx, zoneIdx)
+		local zoneIdx = zoneIdx or 0;
+		local continent = class.GetContinents()[continentIdx];
+
+		-- Show continent if no zone index specified.
+		if zoneIdx <= 0 then
+			WorldMapFrame:SetMapID(continent.mapID);
+			return;
+		end
+
+		-- Otherwise show zone at index.
+		local zone = class.GetZonesForContinentByIdx(continentIdx)[zoneIdx];
+		WorldMapFrame:SetMapID(zone.mapID);
+	end
+
+	--- Returns info for the specified POI.
+	class.GetMapBannerInfo = function(bannerID)
+		local banners = C_Map.GetMapBannersForMap(class.GetCurrentMapID());
+		for i, banner in pairs(banners) do
+			if banner.areaPoiID == bannerID then
+				return banner;
+			end
+		end
+	end
+
+	--- Returns number of map banners on the map.
+	class.GetNumMapBanners = function()
+		local banners = C_Map.GetMapBannersForMap(class.GetCurrentMapID());
+		return table.getn(banners);
+	end
+
+	--- Returns map texture info for a texture in the current map at the specified index. Should replace GetMapOverlayInfo.
+	class.GetMapTextureInfo = function(idx)
+		local mapTextures = C_MapExplorationInfo.GetExploredMapTextures(class.GetCurrentMapID());
+
+		if mapTextures == None or table.getn(mapTextures) < idx then
+			return {};
+		end
+
+		return mapTextures[idx];
+	end
+
+	--- Returns number of map textures on the current map.
+	class.GetNumMapTextures = function()
+		local mapTextures = C_MapExplorationInfo.GetExploredMapTextures(class.GetCurrentMapID());
+
+		if mapTextures == None then
+			return 0;
+		end
+
+		return table.getn(mapTextures);
 	end
 
 	-- TODO: Move to a utils file.
