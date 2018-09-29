@@ -213,8 +213,17 @@ function GHI_Position(useVersion1Coor)
 				table.insert(continents, childMap);
 			-- If it's larger than a continent, get it's own continents.
 			elseif childMap.mapType < Enum.UIMapType.Continent then
+
 				local childMapContinents = class.GetContinentsForMap(childMap.mapID);
-				tableAppend(continents, childMapContinents);
+				-- If there are multiple sub-maps, unpack it and insert the values.
+				if type(childMapContinents) == "table" then
+					for i, childMap in pairs(childMapContinents) do
+						table.insert(continents, childMap)
+					end
+				else
+					table.insert(continents, childMapContinents)
+				end
+
 			end
 		end
 
@@ -280,18 +289,6 @@ function GHI_Position(useVersion1Coor)
 		return table.getn(mapTextures);
 	end
 
-	-- TODO: Move to a utils file.
-	--- Append a value to an array. If value is a table, each sub-value will be inserted.
-	tableAppend = function(targetTable, value)
-		-- If value is a table, unpack it and insert the values.
-		if type(value) == "table" then
-			for i, subValue in pairs(value) do
-				table.insert(targetTable, subValue)
-			end
-		else
-			table.insert(targetTable, value)
-		end
-	end
 	--
 
 	class.GetCoor = function(unit,decimals)
