@@ -91,8 +91,9 @@ function GHI_Position(useVersion1Coor)
 
 	-- Map API
 
-	class.GetPlayerMapPosition = function()
-		return C_Map.GetPlayerMapPosition(class.GetCurrentMapID(), "player");
+	class.GetPlayerMapPosition = function(unit)
+		local unit = unit or "player";
+		return C_Map.GetPlayerMapPosition(class.GetCurrentMapID(), unit);
 	end
 
 	--- Returns player positions for members in the party/raid.
@@ -235,20 +236,31 @@ function GHI_Position(useVersion1Coor)
 		return C_Map.GetMapChildrenInfo(class.GetContinents()[continentIdx].mapID);
 	end
 
-	--- Replacement for SetMapZoom.
-	class.SetMapZoom = function(continentIdx, zoneIdx)
-		local zoneIdx = zoneIdx or 0;
-		local continent = class.GetContinents()[continentIdx];
+	--- Zooms the map to the specified continentID/zoneID
+	class.SetMapZoomByID = function(continentID, zoneID)
+		local zoneID = zoneID or -1;
 
 		-- Show continent if no zone index specified.
-		if zoneIdx <= 0 then
-			WorldMapFrame:SetMapID(continent.mapID);
+		if zoneID < 0 then
+			WorldMapFrame:SetMapID(continentID);
 			return;
 		end
 
-		-- Otherwise show zone at index.
-		local zone = class.GetZonesForContinentByIdx(continentIdx)[zoneIdx];
-		WorldMapFrame:SetMapID(zone.mapID);
+		-- Otherwise show zone.
+		WorldMapFrame:SetMapID(zoneID);
+	end
+
+	--- Replacement for SetMapZoom.
+	class.SetMapZoomByIdx = function(continentIdx, zoneIdx)
+		local zoneIdx = zoneIdx or 0;
+		local continent = class.GetContinents()[continentIdx];
+		local zoneID = -1;
+
+		if zoneIdx > 0 then
+			zoneID = class.GetZonesForContinentByIdx(continentIdx)[zoneIdx].mapID;
+		end
+
+		class.SetMapZoomByID(continent.mapID, zoneID);
 	end
 
 	--- Returns info for the specified POI.
@@ -294,10 +306,10 @@ function GHI_Position(useVersion1Coor)
 	class.GetCoor = function(unit,decimals)
 		if not (unit) then unit = "player" end
 
-		zoneIndex = C_Map.GetBestMapForUnit("player"); -- TODO: Correct conversion? Probably need functions that walk up and down to find the right mapType (Enum.UIMapType)
-		continent = class.GetCurrentMapContinent();
+		zoneIndex = class.GetCurrentMapIndex();
+		continent = class.GetCurrentMapContinentID();
 		areaID = class.GetCurrentMapID();
-		--dungeonLevel = GetCurrentMapDungeonLevel();
+		dungeonLevel = class.GetCurrentMapDungeonLevel();
 
 		-- check if drop down is shown
 		DD = {
@@ -310,24 +322,21 @@ function GHI_Position(useVersion1Coor)
 		-- Move map
 		SetMapToCurrentZone();
 		currentContinent = continent;
-		if currentContinent < 0 or currentContinent > 7 or currentContinent == 5 then --7 is draenor,6 is pandaria, 5 is maelstrom
+		if currentContinent < 0 or currentContinent == 572 or currentContinent == 424 or currentContinent == 948 then -- 572 is draenor, 424 is pandaria, 948 is maelstrom
 			ResetMap()
 			return 0.0, 0.0, 0
 		end
 
-		if currentContinent == 3 then
-			SetMapZoom(3)
-		else
-			SetMapZoom(0)
-		end
+		class.SetMapZoomByID(currentContinent);
 
-		local x, y = GetPlayerMapPosition(unit)
+		local playerPos = class.GetPlayerMapPosition(unit);
+		local x, y = playerPos.x, playerPos.y;
 		local level;
 		if floorLevel then
 			level = floorLevel.GetCurrentFloorLevel();
 		end
 		--print("raw", x, y)
-		if currentContinent == 3 then
+		if currentContinent == 101 then
 			x = x * 2228.61382 -- scale for Outland
 			y = y * 1485.74255
 			ResetMap();
