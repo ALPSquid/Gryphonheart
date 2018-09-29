@@ -471,7 +471,7 @@ function GHI_ScriptEnviroment(ownerGuid)
 		SetMapToCurrentZone = function()
             WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
 	    end,
-		SetMapZoom = GHI_Position().SetMapZoom,
+		SetMapZoom = GHI_Position().SetMapZoomByIdx,
 		SetupFullscreenScale = SetupFullscreenScale,
 		UpdateMapHighlight = UpdateMapHighlight,
 		ZoomOut = ZoomOut,
